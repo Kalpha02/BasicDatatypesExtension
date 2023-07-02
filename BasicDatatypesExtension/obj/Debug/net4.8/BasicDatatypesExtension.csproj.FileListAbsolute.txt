@@ -1,0 +1,9 @@
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\bin\Debug\net4.8\BasicDatatypesExtension.dll
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\bin\Debug\net4.8\BasicDatatypesExtension.pdb
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net4.8\BasicDatatypesExtension.csproj.AssemblyReference.cache
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net4.8\BasicDatatypesExtension.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net4.8\BasicDatatypesExtension.AssemblyInfoInputs.cache
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net4.8\BasicDatatypesExtension.AssemblyInfo.cs
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net4.8\BasicDatatypesExtension.csproj.CoreCompileInputs.cache
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net4.8\BasicDatatypesExtension.dll
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net4.8\BasicDatatypesExtension.pdb
