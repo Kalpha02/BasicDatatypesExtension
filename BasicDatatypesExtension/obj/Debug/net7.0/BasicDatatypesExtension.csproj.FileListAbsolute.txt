@@ -1,7 +1,6 @@
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\bin\Debug\net7.0\BasicDatatypesExtension.deps.json
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\bin\Debug\net7.0\BasicDatatypesExtension.dll
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\bin\Debug\net7.0\BasicDatatypesExtension.pdb
-C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net7.0\BasicDatatypesExtension.csproj.AssemblyReference.cache
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net7.0\BasicDatatypesExtension.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net7.0\BasicDatatypesExtension.AssemblyInfoInputs.cache
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net7.0\BasicDatatypesExtension.AssemblyInfo.cs

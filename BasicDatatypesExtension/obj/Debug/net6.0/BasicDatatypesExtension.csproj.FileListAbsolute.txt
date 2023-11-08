@@ -1,4 +1,3 @@
-C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net6.0\BasicDatatypesExtension.csproj.AssemblyReference.cache
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net6.0\BasicDatatypesExtension.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net6.0\BasicDatatypesExtension.AssemblyInfoInputs.cache
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net6.0\BasicDatatypesExtension.AssemblyInfo.cs

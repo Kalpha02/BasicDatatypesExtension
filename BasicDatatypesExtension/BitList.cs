@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -12,6 +13,8 @@ namespace System
 {
     public class BitList : List<Bit>
     {
+        #region Constructors
+
         public BitList() { }
 
         public BitList(Bit Value) : this(new List<Bit>() { Value }) { }
@@ -25,14 +28,16 @@ namespace System
         public BitList(List<Bit> Bits)
         {
             Bits.ForEach(this.Add);
-            foreach (var Bit in new BitList(true, false)) this.Add(Bit);
         }
+        #endregion
+
+        #region Functions
 
         public BitList TrimStart(bool value = false) => TrimStart(new Bit(value));
         public BitList TrimStart(Bit value)
         {
             BitList TrimmedList = this;
-            for (int i = 0; i < TrimmedList.Count; i++)
+            for (int i = TrimmedList.Count - 1; i >= 0; i--)
             {
                 if (TrimmedList[0] != value)
                 {
@@ -41,6 +46,16 @@ namespace System
                 TrimmedList.RemoveAt(0);
             }
             return TrimmedList;
+        }
+
+        public BitList PadLeft(int ItemsTotal)
+        {
+            BitList PaddedBitlist = this;
+            while (ItemsTotal > PaddedBitlist.Count)
+            {
+                PaddedBitlist.Insert(0, false);
+            }
+            return PaddedBitlist;
         }
 
         public BitList PadLeft(int ItemsTotal, Bit Value)
@@ -63,41 +78,23 @@ namespace System
             return PaddedBitlist;
         }
 
-        public Color ToColor()
-        {
-            return BitList.ToColor(this);
-        }
+        public Color ToColor() => BitList.ToColor(this);
+
+        public byte[] ToByteArray() => BitList.ToByteArray(this);
 
         public string ToString(int PadLeft)
         {
             return this.ToString().PadLeft(PadLeft, '0');
         }
 
-        /// <summary>
-        /// Converts the list of bits into a color. It will use 8 bit segments for each alpha, red, green and blue value. The list of bits will align right.
-        /// </summary>
-        /// <param name="Bitlist"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public static Color ToColor(BitList Bitlist)
-        {
-            while (Bitlist.Count > 32)
-            {
-                if ((bool)Bitlist.First()) throw new ArgumentOutOfRangeException(nameof(Bitlist), $"List of bits has more bits than the maximum amount of {32}");
-                Bitlist.RemoveAt(0);
-            }
-            while (Bitlist.Count < 32)
-            {
-                Bitlist.Insert(0, false);
-            }
-            Console.WriteLine(Bitlist);
-            return Color.FromArgb((int)BitList.ToNumber(Bitlist.GetRange(0, 8)), (int)BitList.ToNumber(Bitlist.GetRange(8, 8)), (int)BitList.ToNumber(Bitlist.GetRange(16, 8)), (int)BitList.ToNumber(Bitlist.GetRange(24, 8)));
-        }
-
         public override string ToString()
         {
             StringBuilder retruningValue = new StringBuilder();
             this.ForEach(Bit => retruningValue.Append(Bit));
+            if (this.Count == 0)
+            {
+                retruningValue.Append('0');
+            }
             return retruningValue.ToString();
         }
 
@@ -116,9 +113,15 @@ namespace System
 
         public override int GetHashCode()
         {
-            return ((List<Bit>)new BitList(this).TrimStart()).GetHashCode();
+            int hash = 2147483647;
+            foreach (Bit b in this.TrimStart().ToArray())
+            {
+                hash = hash * 1754323 + b.GetHashCode();
+            }
+            return hash;
         }
 
+        #endregion
 
         #region Static Functions
 
@@ -147,7 +150,6 @@ namespace System
 
         public static BigInteger ToNumber(List<Bit> BitCode, int MaxBits = -1)
         {
-            int BitCodeLength = BitCode.Count;
             if (MaxBits > 0)
             {
                 while (BitCode.Count > MaxBits)
@@ -156,6 +158,7 @@ namespace System
                     BitCode.RemoveAt(0);
                 }
             }
+            int BitCodeLength = BitCode.Count;
             BigInteger Value = 0;
             for (int i = 0; i < BitCodeLength; i++)
             {
@@ -163,10 +166,19 @@ namespace System
             }
             return Value;
         }
+
+        public static BigInteger ToNumber(Bit[] BitCode)
+        {
+            BigInteger Value = 0;
+            for (int i = 0; i < BitCode.Length; i++)
+            {
+                Value += BitCode[i][BitCode.Length - i - 1];
+            }
+            return Value;
+        }
 #else
         public static int ToNumber(List<Bit> BitCode, int MaxBits = -1)
         {
-            int BitCodeLength = BitCode.Count;
             if (MaxBits > 0)
             {
                 while (BitCode.Count > MaxBits)
@@ -175,10 +187,21 @@ namespace System
                     BitCode.RemoveAt(0);
                 }
             }
+            int BitCodeLength = BitCode.Count;
             int Value = 0;
             for (int i = 0; i < BitCodeLength; i++)
             {
                 Value += (int)(BitCode[i][BitCodeLength - i - 1]);
+            }
+            return Value;
+        }
+
+        public static int ToNumber(Bit[] BitCode)
+        {
+            int Value = 0;
+            for (int i = 0; i < BitCode.Length; i++)
+            {
+                Value += (int)(BitCode[i][BitCode.Length - i - 1]);
             }
             return Value;
         }
@@ -206,6 +229,40 @@ namespace System
         }
 #endif
 
+        /// <summary>
+        /// Converts the list of bits into a color. It will use 8 bit segments for each alpha, red, green and blue value. The list of bits will align right.
+        /// </summary>
+        /// <param name="Bitlist"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static Color ToColor(BitList Bitlist)
+        {
+            while (Bitlist.Count > 32)
+            {
+                if ((bool)Bitlist.First()) throw new ArgumentOutOfRangeException(nameof(Bitlist), $"List of bits has more bits than the maximum amount of {32}");
+                Bitlist.RemoveAt(0);
+            }
+            while (Bitlist.Count < 32)
+            {
+                Bitlist.Insert(0, false);
+            }
+            Console.WriteLine(Bitlist);
+            return Color.FromArgb((int)BitList.ToNumber(Bitlist.GetRange(0, 8)), (int)BitList.ToNumber(Bitlist.GetRange(8, 8)), (int)BitList.ToNumber(Bitlist.GetRange(16, 8)), (int)BitList.ToNumber(Bitlist.GetRange(24, 8)));
+        }
+
+        public static byte[] ToByteArray(BitList Value)
+        {
+            List<byte> Bytes = new List<byte>();
+            if (Value.Count % 8 != 0)
+            {
+                Value = Value.PadLeft(Value.Count + (8 - (Value.Count % 8)), false);
+            }
+            for (int i = 0; i < Value.Count; i += 8)
+            {
+                Bytes.Add((byte)BitList.ToNumber(Value.GetRange(i, 8)));
+            }
+            return Bytes.ToArray();
+        }
 
         /// <summary>
         /// Moves bits to the right.
@@ -268,6 +325,8 @@ namespace System
 
         #endregion
 
+        #region Implicit Operators
+
         public static implicit operator BitList(Bit[] Value)
         {
             return new BitList(Value);
@@ -276,6 +335,29 @@ namespace System
         public static implicit operator BitList(Bit Value)
         {
             return new BitList(Value);
+        }
+
+        public static implicit operator BitList(byte Value)
+        {
+            return BitList.ToBitList(Value).PadLeft(8, false);
+        }
+
+        public static implicit operator BitList(byte[] Value)
+        {
+            if (Value == null)
+            {
+                throw new ArgumentNullException(nameof(Value));
+            }
+            if (Value.Length == 0)
+            {
+                throw new Exception("Total length need to be bigger than 0");
+            }
+            BitList val = Value[0];
+            for (int i = 1; i < Value.Length; i++)
+            {
+                val.Add(Value[i]);
+            }
+            return val;
         }
 #if NET5_0_OR_GREATER
         public static implicit operator BitList(BigInteger Value)
@@ -289,6 +371,33 @@ namespace System
         }
 #endif
 
+        #endregion
+
+        #region Explicit Operators
+
+        public static explicit operator Bit[](BitList Value)
+        {
+            return Value.ToArray();
+        }
+
+#if NET5_0_OR_GREATER
+
+        public static explicit operator BigInteger(BitList Value)
+        {
+            return BitList.ToNumber(Value);
+        }
+
+#else
+
+        public static explicit operator int(BitList Value)
+        {
+            return BitList.ToNumber(Value);
+        }
+#endif
+
+        #endregion
+
+        #region Logical Operators
         public static BitList operator +(Bit Value1, BitList Value2) => Value2 + Value1;
         public static BitList operator +(BitList Value1, Bit Value2)
         {
@@ -465,5 +574,7 @@ namespace System
         public static bool operator !=(BitList Value1, List<Bit> Value2) => !Value1.Equals(Value2);
         public static bool operator !=(Bit[] Value1, BitList Value2) => !Value2.Equals(Value1);
         public static bool operator !=(BitList Value1, Bit[] Value2) => !Value1.Equals(Value2);
+
+        #endregion
     }
 }

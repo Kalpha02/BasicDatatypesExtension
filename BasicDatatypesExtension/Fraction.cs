@@ -35,7 +35,7 @@ namespace System
             Numerator = value;
         }
 
-        private Fraction(BigInteger Numerator, BigInteger Denominator)
+        public Fraction(BigInteger Numerator, BigInteger Denominator)
         {
             this.Numerator = Numerator;
             this.Denominator = Denominator;
