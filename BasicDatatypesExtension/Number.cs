@@ -8,12 +8,11 @@ using System.Threading.Tasks;
 
 namespace System
 {
-#if NET5_0_OR_GREATER
     public class Number
     {
         //private bool isImaginary;
         private BigInteger _Value1 = 0;
-        private Number? _Value2 = null;
+        private Number? _Value2;
         private System.Number.MathOperator _Operator = MathOperator.Add;
 
         private Number() { }
@@ -84,19 +83,19 @@ namespace System
             switch (_Operator)
             {
                 case MathOperator.Add:
-                    sb.Append("+");
+                    sb.Append('+');
                     break;
                 case MathOperator.Subtract:
-                    sb.Append("-");
+                    sb.Append('-');
                     break;
                 case MathOperator.Multiply:
-                    sb.Append("*");
+                    sb.Append('*');
                     break;
                 case MathOperator.Divide:
-                    sb.Append("/");
+                    sb.Append('/');
                     break;
                 case MathOperator.Power:
-                    sb.Append("^");
+                    sb.Append('^');
                     break;
                 case MathOperator.Root:
                 case MathOperator.Logarithm:
@@ -199,5 +198,4 @@ namespace System
             Logarithm = 6,
         }
     }
-#endif
 }

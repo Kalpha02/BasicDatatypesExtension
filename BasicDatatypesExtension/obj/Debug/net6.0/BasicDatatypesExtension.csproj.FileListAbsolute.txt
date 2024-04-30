@@ -9,3 +9,4 @@ C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\Basic
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net6.0\refint\BasicDatatypesExtension.dll
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net6.0\BasicDatatypesExtension.pdb
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net6.0\ref\BasicDatatypesExtension.dll
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net6.0\BasicDatatypesExtension.sourcelink.json

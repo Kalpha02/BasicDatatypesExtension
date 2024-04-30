@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-#if NET6_0_OR_GREATER
 namespace System
 {
     public struct Fraction
@@ -114,11 +113,6 @@ namespace System
             return (Value.Numerator - (Value.Numerator % Value.Denominator)) / Value.Denominator;
         }
 
-        public decimal ToDecimal()
-        {
-            return (decimal)Numerator / (decimal)Denominator;
-        }
-
         /// <summary>
         /// rounds the number to an integer. Returns true if the value was rounded
         /// </summary>
@@ -143,9 +137,26 @@ namespace System
             return base.GetHashCode();
         }
 
+        public BigInteger ToBigInteger()
+        {
+            return (BigInteger)this;
+        }
+
+        public decimal ToDecimal()
+        {
+            return (decimal)this;
+        }
+
         public override string ToString()
         {
-            return Numerator.ToString() + "/" + Denominator.ToString();
+            StringBuilder sb = new StringBuilder();
+            sb.Append(Numerator);
+            if (Denominator != 1)
+            {
+                sb.Append('/');
+                sb.Append(Denominator);
+            }
+            return sb.ToString();
         }
 
         public static implicit operator Fraction(decimal value)
@@ -158,9 +169,14 @@ namespace System
             return new Fraction(value);
         }
 
+        public static explicit operator BigInteger(Fraction value)
+        {
+            return value.Numerator / value.Denominator;
+        }
+
         public static explicit operator decimal(Fraction value)
         {
-            return value.ToDecimal();
+            return (decimal)value.Numerator / (decimal)value.Denominator;
         }
 
         public static Fraction operator +(Fraction value1, Fraction value2)
@@ -246,4 +262,3 @@ namespace System
         }
     }
 }
-#endif

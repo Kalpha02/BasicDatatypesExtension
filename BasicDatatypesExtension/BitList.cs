@@ -1,23 +1,29 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace System
 {
     public class BitList : List<Bit>
+#if NET7_0_OR_GREATER
+        , IAdditionOperators<BitList, BitList, BigInteger>
+        , ISubtractionOperators<BitList, BitList, BigInteger>
+        , IMultiplyOperators<BitList, BitList, BigInteger>
+        , IDivisionOperators<BitList, BitList, BigInteger>
+        , IParsable<BitList>
+#endif
     {
+
         #region Constructors
 
         public BitList() { }
-
-        public BitList(Bit Value) : this(new List<Bit>() { Value }) { }
 
         public BitList(params Bit[] Value)
         {
@@ -33,41 +39,63 @@ namespace System
 
         #region Functions
 
+        /// <summary>
+        /// Returns the <see cref="BitList"/> with all leading <see cref="Bit"/>s removed which are equal to the value of <paramref name="value"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public BitList TrimStart(bool value = false) => TrimStart(new Bit(value));
+        /// <summary>
+        /// Returns the <see cref="BitList"/> with all leading <see cref="Bit"/>s removed which are equal to the value of <paramref name="value"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public BitList TrimStart(Bit value)
         {
-            BitList TrimmedList = this;
-            for (int i = TrimmedList.Count - 1; i >= 0; i--)
+            if (this.Count == 0)
             {
-                if (TrimmedList[0] != value)
-                {
-                    break;
-                }
-                TrimmedList.RemoveAt(0);
+                return new BitList((List<Bit>)this.MemberwiseClone());
             }
-            return TrimmedList;
+            if (!this.Any(B => B != value))
+            {
+                return new BitList((List<Bit>)this.MemberwiseClone());
+            }
+            BitList Val = new BitList();
+            Val.AddRange(this.GetRange((this.IndexOf(!value))));
+            return Val;
         }
 
-        public BitList PadLeft(int ItemsTotal)
+        /// <summary>
+        /// Returns a <see cref="BitList"/> that right-aligns the <see cref="Bit"/>s in this instance by padding them with zero-values on the left,
+        /// for the specified total length of <paramref name="ItemsTotal"/>.
+        /// </summary>
+        /// <param name="ItemsTotal">The minimum size of the <see cref="BitList"/> which will be returned.</param>
+        /// <returns></returns>
+        public BitList PadLeft(int ItemsTotal) => this.PadLeft(ItemsTotal, false);
+        /// <summary>
+        /// Returns a <see cref="BitList"/> that right-aligns the <see cref="Bit"/>s in this instance by padding them with the value of <paramref name="PaddingChar"/>
+        /// on the left, for the specified total length of <paramref name="ItemsTotal"/>.
+        /// </summary>
+        /// <param name="ItemsTotal">The minimum size of the <see cref="BitList"/> which will be returned.</param>
+        /// <param name="PaddingChar">The value that will be used to fill the <see cref="BitList"/> if necessary.</param>
+        /// <returns></returns>
+        public BitList PadLeft(int ItemsTotal, Bit PaddingChar)
         {
             BitList PaddedBitlist = this;
             while (ItemsTotal > PaddedBitlist.Count)
             {
-                PaddedBitlist.Insert(0, false);
+                PaddedBitlist.Insert(0, PaddingChar);
             }
             return PaddedBitlist;
         }
 
-        public BitList PadLeft(int ItemsTotal, Bit Value)
-        {
-            BitList PaddedBitlist = this;
-            while (ItemsTotal > PaddedBitlist.Count)
-            {
-                PaddedBitlist.Insert(0, Value);
-            }
-            return PaddedBitlist;
-        }
-
+        /// <summary>
+        /// Returns a <see cref="BitList"/> that left-aligns the <see cref="Bit"/>s in this instance by padding them with the value of <paramref name="PaddingChar"/>
+        /// on the right, for the specified total length of <paramref name="ItemsTotal"/>.
+        /// </summary>
+        /// <param name="ItemsTotal">The minimum size of the <see cref="BitList"/> which will be returned.</param>
+        /// <param name="PaddingChar">The value that will be used to fill the <see cref="BitList"/> if necessary.</param>
+        /// <returns></returns>
         public BitList PadRight(int ItemsTotal, Bit Value)
         {
             BitList PaddedBitlist = this;
@@ -78,19 +106,175 @@ namespace System
             return PaddedBitlist;
         }
 
+        /// <summary>
+        /// Returns a new <see cref="BitList"/> with a total length which is dividable by 8.
+        /// The copy of the instance will be filled with leading zeros if necessary.
+        /// </summary>
+        /// <returns></returns>
+        public BitList ToByteSize() => BitList.ToByteSize(this);
+
+        public void ForEach(Action<byte> action)
+        {
+            this.ToByteList().ForEach(action);
+        }
+
+        /// <summary>
+        /// Sets the list to a specific amount of bits.
+        /// If the preferred <paramref name="Length"/> is longer than the current amount of bits the list will be filled with zeros.
+        /// If the list is longer than <paramref name="Length"/> the leading bits will be cut off
+        /// </summary>
+        /// <param name="Length">The number of bits the bitlist will get</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public BitList ToLength(int Length)
+        {
+            if (Length < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Length));
+            }
+            if (Length < this.Count)
+            {
+                return new BitList(this.GetRange(this.Count - Length, Length));
+            }
+            if (Length > this.Count)
+            {
+                return this.PadLeft(Length);
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Searches for the specified range and returns a zero-based index of the first occurence of the entire <see cref="List{T}"/> of this instance.
+        /// </summary>
+        /// <param name="Range"></param>
+        /// <returns>The zero-based index of the first occurence of <paramref name="Range"/>, if found; otherwise, -1.</returns>
+        public int IndexOf(List<Bit> Range) => this.IndexOf(Range, 0, this.Count);
+        /// <summary>
+        /// Searches for the specified range and returns a zero-based index of the first occurence within the range of elements in the <see cref="List{T}"/>
+        /// that extends from the specified index to the last element of this instance.
+        /// </summary>
+        /// <param name="Range"></param>
+        /// <param name="StartIndex">The zero-based starting index of the search.</param>
+        /// <returns>The zero-based index of the first occurence of <paramref name="Range"/>, if found; otherwise, -1.</returns>
+        public int IndexOf(List<Bit> Range, int StartIndex) => this.IndexOf(Range, StartIndex, this.Count);
+        /// <summary>
+        /// Searches for the specified range and returns a zero-based index of the first occurence within the range of elements in the <see cref="List{T}"/>
+        /// that starts at the specified index of <paramref name="StartIndex"/> and contains the specified number of elements.
+        /// </summary>
+        /// <param name="Range"></param>
+        /// <param name="StartIndex">The zero-based starting index of the search.</param>
+        /// <param name="Count">The number of elements in the section to search.</param>
+        /// <returns>The zero-based index of the first occurence of <paramref name="Range"/>, if found; otherwise, -1.</returns>
+        public int IndexOf(List<Bit> Range, int StartIndex, int Count)
+        {
+            ArgumentNullException.ThrowIfNull(Range, nameof(Range));
+            if (Range.Count == 0)
+            {
+                throw new ArgumentException("Argument length is 0", nameof(Range));
+            }
+            if (Range.Count > (this.Count - StartIndex))
+            {
+                throw new ArgumentException("Argument is longer than the item itself", nameof(Range));
+            }
+            int Counter = Range.Count;
+            for (int j = 0; StartIndex < this.Count; StartIndex++, j++)
+            {
+                if (j == Range.Count)
+                    throw new ArgumentOutOfRangeException(nameof(Range));
+                if (this[StartIndex] == Range[j])
+                {
+                    Count--;
+                    if (Count == 0)
+                    {
+                        return StartIndex - Range.Count - 1;
+                    }
+                    continue;
+                }
+                Count = Range.Count;
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Creates a shallow copy of a range of elements in the source <see cref="List{T}"/>.
+        /// </summary>
+        /// <param name="index">The zero-bast List index at which the range starts.</param>
+        /// <returns>A shallow copy of a range of elements in the source </returns>
+        /// <exception cref="Exception"></exception>
+        /// <exception cref="IndexOutOfRangeException"></exception>
+        public BitList GetRange(int index)
+        {
+            if (index < 0 || index >= this.Count)
+            {
+                if (this.Count == 0)
+                {
+                    throw new Exception("You can't get a range from an empty list");
+                }
+                throw new IndexOutOfRangeException();
+            }
+            return new BitList(this.GetRange(index, this.Count - index - 1));
+        }
+
+        /// <summary>
+        /// Adds a range to the end of the <see cref="BitList"/>.
+        /// </summary>
+        /// <param name="Value">The <see cref="List{T}"/> which will be added</param>
+        public void AddRange(List<bool> Value)
+        {
+            foreach (bool b in Value)
+            {
+                this.Add(b);
+            }
+        }
+        /// <summary>
+        /// Adds a range to the end of the <see cref="BitList"/>.
+        /// </summary>
+        /// <param name="Value">The <see cref="bool[]"/> which will be added</param>
+        public void AddRange(bool[] Value)
+        {
+            foreach (bool b in Value)
+            {
+                this.Add(b);
+            }
+        }
+
+        public void Add(byte Value)
+        {
+            this.AddRange(BitList.ToBitList(Value, 8));
+        }
+
+        /// <summary>
+        /// The actual value of the <see cref="BitList"/>.
+        /// </summary>
+        public BigInteger Number
+        {
+            get
+            {
+                return BitList.ToNumber(this);
+            }
+        }
+
+        /// <summary>
+        /// Converts the list of bits into a <see cref="Color"/>. It will use 8 bit segments for each alpha, red, green and blue value. The list of bits will align right.
+        /// Leading zeros won't throw an exception if only the last 32 items contains ones.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public Color ToColor() => BitList.ToColor(this);
 
         public byte[] ToByteArray() => BitList.ToByteArray(this);
 
-        public string ToString(int PadLeft)
-        {
-            return this.ToString().PadLeft(PadLeft, '0');
-        }
+        public List<byte> ToByteList() => BitList.ToByteList(this);
+
+        public string ToString(int PadLeft) => this.ToString().PadLeft(PadLeft, '0');
 
         public override string ToString()
         {
             StringBuilder retruningValue = new StringBuilder();
-            this.ForEach(Bit => retruningValue.Append(Bit));
+            {
+                Action<Bit> act = Bit => retruningValue.Append(Bit);
+                this.ForEach(act);
+            }
             if (this.Count == 0)
             {
                 retruningValue.Append('0');
@@ -98,8 +282,73 @@ namespace System
             return retruningValue.ToString();
         }
 
+        public virtual string ToString(string Format)
+        {
+            if (string.IsNullOrEmpty(Format))
+            {
+                return ToString();
+            }
+            if (Format.StartsWith('0'))
+            {
+                if (Format.TrimStart('0').StartsWith('.'))
+                {
+                    if (Format.Trim('0').Length == 1)
+                    {
+                        return BitList.ToNumber(this).ToString().PadLeft(Format.Length - Format.TrimStart('0').Length, '0') + '.' + Format.TrimStart('0').Substring(1);
+                    }
+                }
+                return this.ToString();
+            }
+            if (Format.ToLower() == "g")
+            {
+                return BitList.ToNumber(this).ToString();
+            }
+            int val;
+            if (!int.TryParse(Format.Substring(1), out val))
+            {
+                return this.ToString();
+            }
+            switch (Format.ToLower()[0])
+            {
+                case 'd':
+                    return BitList.ToNumber(this).ToString().PadLeft(val, '0');
+                case 'f':
+                    if (val == 0)
+                    {
+                        return BitList.ToNumber(this).ToString();
+                    }
+                    return BitList.ToNumber(this).ToString() + ".".PadRight(val + 1, '0');
+                case 'x':
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var b in ToByteArray())
+                    {
+                        sb.Append(b.ToString(Format));
+                    }
+                    return sb.ToString().PadLeft(val, '0');
+
+            }
+            return this.ToString();
+        }
+
         public override bool Equals(object obj)
         {
+            if (obj is List<Bit> | obj is BitList)
+            {
+                return this.Number == new BitList((List<Bit>)obj).Number;
+            }
+            if (obj is Bit[] BitArray)
+            {
+                return this.Number == new BitList(BitArray).Number;
+            }
+            return false;
+        }
+
+        public virtual bool Equals(object obj, bool OnlyCompareNumber)
+        {
+            if (!OnlyCompareNumber)
+            {
+                return this.Equals(obj);
+            }
             if (obj is List<Bit> | obj is BitList)
             {
                 return this.GetHashCode() == new BitList((List<Bit>)obj).GetHashCode();
@@ -123,11 +372,16 @@ namespace System
 
         #endregion
 
+        #region Properties
+
+        public static readonly BitList Empty = new();
+
+        #endregion
+
         #region Static Functions
 
-#if NET5_0_OR_GREATER
         /// <summary>
-        /// Converts a Number to a List of Bits
+        /// Converts a Number to an object of the <see cref="BitList"/> class.
         /// </summary>
         /// <param name="Value"></param>
         /// <param name="PadLeft"></param>
@@ -148,16 +402,26 @@ namespace System
             return BTC;
         }
 
-        public static BigInteger ToNumber(List<Bit> BitCode, int MaxBits = -1)
+        /// <summary>
+        /// Returns a new <see cref="BitList"/> with a total length which is dividable by 8.
+        /// The <paramref name="referenceList"/> will be filled with leading zeros if necessary.
+        /// </summary>
+        /// <param name="referenceList">The List of <see cref="Bit"/>s which will be adjusted. Instances of <see cref="BitList"/> can also be passed.</param>
+        /// <returns></returns>
+        public static BitList ToByteSize(List<Bit> referenceList)
         {
-            if (MaxBits > 0)
+            var result = new BitList(referenceList);
+            byte mod8 = (byte)(result.Count % 8);
+            while (mod8 != 0)
             {
-                while (BitCode.Count > MaxBits)
-                {
-                    if ((bool)BitCode.First()) throw new ArgumentOutOfRangeException(nameof(BitCode), $"List of bits has more bits than the maximum amount of {MaxBits}");
-                    BitCode.RemoveAt(0);
-                }
+                result.Insert(0, false);
+                mod8--;
             }
+            return result;
+        }
+
+        public static BigInteger ToNumber(List<Bit> BitCode)
+        {
             int BitCodeLength = BitCode.Count;
             BigInteger Value = 0;
             for (int i = 0; i < BitCodeLength; i++)
@@ -176,61 +440,10 @@ namespace System
             }
             return Value;
         }
-#else
-        public static int ToNumber(List<Bit> BitCode, int MaxBits = -1)
-        {
-            if (MaxBits > 0)
-            {
-                while (BitCode.Count > MaxBits)
-                {
-                    if ((bool)BitCode.First()) throw new ArgumentOutOfRangeException(nameof(BitCode), $"List of bits has more bits than the maximum amount of {MaxBits}");
-                    BitCode.RemoveAt(0);
-                }
-            }
-            int BitCodeLength = BitCode.Count;
-            int Value = 0;
-            for (int i = 0; i < BitCodeLength; i++)
-            {
-                Value += (int)(BitCode[i][BitCodeLength - i - 1]);
-            }
-            return Value;
-        }
-
-        public static int ToNumber(Bit[] BitCode)
-        {
-            int Value = 0;
-            for (int i = 0; i < BitCode.Length; i++)
-            {
-                Value += (int)(BitCode[i][BitCode.Length - i - 1]);
-            }
-            return Value;
-        }
 
         /// <summary>
-        /// Converts a Number to a List of Bits
-        /// </summary>
-        /// <param name="Value"></param>
-        /// <param name="PadLeft"></param>
-        /// <returns></returns>
-        public static BitList ToBitList(int Value, int PadLeft = 0)
-        {
-            BitList BTC = new BitList();
-            while (Value != 0)
-            {
-                BTC.Add(Value % 2 != 0);
-                Value /= 2;
-            }
-            while (PadLeft > BTC.Count)
-            {
-                BTC.Add(false);
-            }
-            BTC.Reverse();
-            return BTC;
-        }
-#endif
-
-        /// <summary>
-        /// Converts the list of bits into a color. It will use 8 bit segments for each alpha, red, green and blue value. The list of bits will align right.
+        /// Converts the list of bits into a <see cref="Color"/>. It will use 8 bit segments for each alpha, red, green and blue value. The list of bits will align right.
+        /// Leading zeros won't throw an exception if only the last 32 items contains ones.
         /// </summary>
         /// <param name="Bitlist"></param>
         /// <returns></returns>
@@ -246,47 +459,49 @@ namespace System
             {
                 Bitlist.Insert(0, false);
             }
-            Console.WriteLine(Bitlist);
-            return Color.FromArgb((int)BitList.ToNumber(Bitlist.GetRange(0, 8)), (int)BitList.ToNumber(Bitlist.GetRange(8, 8)), (int)BitList.ToNumber(Bitlist.GetRange(16, 8)), (int)BitList.ToNumber(Bitlist.GetRange(24, 8)));
-        }
-
-        public static byte[] ToByteArray(BitList Value)
-        {
-            List<byte> Bytes = new List<byte>();
-            if (Value.Count % 8 != 0)
-            {
-                Value = Value.PadLeft(Value.Count + (8 - (Value.Count % 8)), false);
-            }
-            for (int i = 0; i < Value.Count; i += 8)
-            {
-                Bytes.Add((byte)BitList.ToNumber(Value.GetRange(i, 8)));
-            }
-            return Bytes.ToArray();
+            Debug.WriteLine(Bitlist);
+            return Color.FromArgb((int)BitList.ToNumber(Bitlist.GetRange(0, 8)),
+                                  (int)BitList.ToNumber(Bitlist.GetRange(8, 8)),
+                                  (int)BitList.ToNumber(Bitlist.GetRange(16, 8)),
+                                  (int)BitList.ToNumber(Bitlist.GetRange(24, 8)));
         }
 
         /// <summary>
-        /// Moves bits to the right.
+        /// Takes the <see cref="Bit"/>s from <paramref name="bitList"/> and converts it into an array of <see cref="byte"/>s.
+        /// If the length does not match it will add leading zeros.
         /// </summary>
-        /// <param name="BitCode">The bit-list that should be moved</param>
-        /// <param name="Value">How many times the bit should be moved</param>
+        /// <param name="bitList"></param>
         /// <returns></returns>
-        public static BitList BitOperator(List<Bit> BitCode, int Value)
+        public static byte[] ToByteArray(BitList bitList)
+        {
+            return BitList.ToByteList(bitList).ToArray();
+        }
+
+        public static List<byte> ToByteList(BitList Bits)
+        {
+            List<byte> Bytes = new List<byte>();
+            List<Bit> bitList = Bits.ToByteSize();
+            for (int i = 0; i < Bits.Count; i += 8)
+            {
+                Bytes.Add((byte)BitList.ToNumber(bitList.GetRange(i, 8)));
+            }
+            return Bytes;
+        }
+
+        /// <summary>
+        /// Moves all the <see cref="Bit"/>s in <see cref="List{T}"/> of <paramref name="BitCode"/> by the amount of <paramref name="Value"/>.
+        /// </summary>
+        /// <param name="BitCode"></param>
+        /// <param name="Value">How many times the bit should be moved in the right direction</param>
+        /// <returns></returns>
+        public static BitList BitWiseOperator(List<Bit> BitCode, BigInteger Value)
         {
             int BitCodeLength = BitCode.Count;
-            Value %= BitCodeLength;
-            /*if(Value < 0)
-            {
-                Value = BitCodeLength + Value;
-            }
-            List<Bit> List = new List<Bit>();
-            List.AddRange(BitCode.GetRange(BitCodeLength - Value, Value));
-            BitCode.*/
-            Bit[] New_BitCode = new Bit[BitCodeLength];
-            for (int i = 0; i < BitCodeLength; i++)
-            {
-                New_BitCode[(BitCodeLength + Value + i) % BitCodeLength] = BitCode[i];
-            }
-            return new BitList(New_BitCode);
+            int Moves = (int)(((Value % BitCodeLength) + BitCodeLength) % BitCodeLength);
+            BitList New_BitCode = new();
+            New_BitCode.AddRange(BitCode.GetRange(BitCodeLength - Moves, Moves));
+            New_BitCode.AddRange(BitCode.GetRange(0, BitCodeLength - Moves));
+            return New_BitCode;
         }
 
         private static void ToSameLength(ref BitList Value1, ref List<Bit> Value2)
@@ -323,6 +538,27 @@ namespace System
             return false;
         }
 
+        public static BitList Parse(string s, IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out BitList result)
+        {
+            DateTime.Parse(s);
+            try
+            {
+                result = BitList.Parse(s, provider);
+                return true;
+            }
+            catch
+            {
+                result = BitList.Empty;
+            }
+            throw new NotImplementedException();
+            //return false;
+        }
+
         #endregion
 
         #region Implicit Operators
@@ -344,10 +580,7 @@ namespace System
 
         public static implicit operator BitList(byte[] Value)
         {
-            if (Value == null)
-            {
-                throw new ArgumentNullException(nameof(Value));
-            }
+            ArgumentNullException.ThrowIfNull(Value, nameof(Value));
             if (Value.Length == 0)
             {
                 throw new Exception("Total length need to be bigger than 0");
@@ -359,17 +592,30 @@ namespace System
             }
             return val;
         }
-#if NET5_0_OR_GREATER
+
+        public static implicit operator BitList(bool[] Value)
+        {
+            BitList result = new BitList();
+            result.AddRange(Value);
+            return result;
+        }
+
+        public static implicit operator BitList(List<bool> Value)
+        {
+            BitList result = new BitList();
+            result.AddRange(Value);
+            return result;
+        }
+
         public static implicit operator BitList(BigInteger Value)
         {
             return BitList.ToBitList(Value);
         }
-#else
-        public static implicit operator BitList(int Value)
+
+        public static implicit operator BitList(long Value)
         {
             return BitList.ToBitList(Value);
         }
-#endif
 
         #endregion
 
@@ -380,20 +626,25 @@ namespace System
             return Value.ToArray();
         }
 
-#if NET5_0_OR_GREATER
+        public static explicit operator bool[](BitList Value)
+        {
+            bool[] result = new bool[Value.Count];
+            for (int i = 0; i < Value.Count; i++)
+            {
+                result[i] = (bool)Value[i];
+            }
+            return result;
+        }
+
+        public static explicit operator byte[](BitList Value)
+        {
+            return BitList.ToByteArray(Value);
+        }
 
         public static explicit operator BigInteger(BitList Value)
         {
             return BitList.ToNumber(Value);
         }
-
-#else
-
-        public static explicit operator int(BitList Value)
-        {
-            return BitList.ToNumber(Value);
-        }
-#endif
 
         #endregion
 
@@ -420,14 +671,14 @@ namespace System
             }
             return Value1;
         }
-        public static BitList operator +(BitList Value1, BitList Value2) => Value1 + (List<Bit>)Value2;
-        public static BitList operator +(List<Bit> Value1, BitList Value2) => Value2 + Value1;
-        public static BitList operator +(BitList Value1, List<Bit> Value2)
+        public static BigInteger operator +(BitList Value1, BitList Value2) => Value1 + (List<Bit>)Value2;
+        public static BigInteger operator +(List<Bit> Value1, BitList Value2) => Value2 + Value1;
+        public static BigInteger operator +(BitList Value1, List<Bit> Value2)
         {
             return BitList.ToNumber(Value1) + BitList.ToNumber(Value2);
         }
 
-        public static BitList operator -(Bit Value1, BitList Value2) => Value2 - Value1;
+        public static BitList operator -(Bit Value1, BitList Value2) => new BitList(Value1) - Value2;
         public static BitList operator -(BitList Value1, Bit Value2)
         {
             if ((bool)Value2)
@@ -453,36 +704,59 @@ namespace System
             }
             return Value1;
         }
-        public static BitList operator -(BitList Value1, List<Bit> Value2) => Value1 - new BitList(Value2);
-        public static BitList operator -(List<Bit> Value1, BitList Value2) => new BitList(Value1) - Value2;
-        public static BitList operator -(BitList Value1, BitList Value2)
+        public static BigInteger operator -(BitList Value1, List<Bit> Value2) => Value1 - new BitList(Value2);
+        public static BigInteger operator -(List<Bit> Value1, BitList Value2) => new BitList(Value1) - Value2;
+        public static BigInteger operator -(BitList Value1, BitList Value2)
         {
             return BitList.ToNumber(Value1) - BitList.ToNumber(Value2);
         }
 
-        public static BitList operator *(BitList Value1, BitList Value2) => Value1 * (List<Bit>)Value2;
-        public static BitList operator *(List<Bit> Value1, BitList Value2) => Value2 * Value1;
-        public static BitList operator *(BitList Value1, List<Bit> Value2)
+        public static BigInteger operator *(BitList Value1, BitList Value2) => Value1 * (List<Bit>)Value2;
+        public static BigInteger operator *(List<Bit> Value1, BitList Value2) => Value2 * Value1;
+        public static BigInteger operator *(BitList Value1, List<Bit> Value2)
         {
             return BitList.ToNumber(Value1) * BitList.ToNumber(Value2);
         }
 
-        public static BitList operator /(BitList Value1, BitList Value2) => Value1 / (List<Bit>)Value2;
-        public static BitList operator /(List<Bit> Value1, BitList Value2) => Value2 / Value1;
-        public static BitList operator /(BitList Value1, List<Bit> Value2)
+        public static BigInteger operator /(BitList Value1, BitList Value2) => Value1 / (List<Bit>)Value2;
+        public static BigInteger operator /(List<Bit> Value1, BitList Value2) => Value2 / Value1;
+        public static BigInteger operator /(BitList Value1, List<Bit> Value2)
         {
             return BitList.ToNumber(Value1) / BitList.ToNumber(Value2);
         }
 
-        public static BitList operator <<(BitList value, int MoveBits)
+        /// <summary>
+        /// Moves the <see cref="Bit"/>s in <paramref name="bitList"/> by the amount of <paramref name="MoveTimes"/> to the left.
+        /// The bits will be added to the right again.
+        /// </summary>
+        /// <param name="bitList"></param>
+        /// <param name="MoveTimes"></param>
+        /// <returns></returns>
+        public static BitList operator <<(BitList bitList, int MoveTimes)
         {
-            return BitList.BitOperator(value, -MoveBits);
+            return BitList.BitWiseOperator(bitList, -MoveTimes);
         }
 
-        public static BitList operator >>(BitList value, int MoveBits)
+        /// <summary>
+        /// Moves the <see cref="Bit"/>s in <paramref name="bitList"/> by the amount of <paramref name="MoveTimes"/> to the right.
+        /// The bits will be added to the left again.
+        /// </summary>
+        /// <param name="bitList"></param>
+        /// <param name="MoveTimes"></param>
+        /// <returns></returns>
+        public static BitList operator >>(BitList bitList, int MoveTimes)
         {
-            return BitList.BitOperator(value, MoveBits);
+            return BitList.BitWiseOperator(bitList, MoveTimes);
         }
+
+#if NET7_0_OR_GREATER
+        public static BitList operator >>>(BitList value, int MoveBits)
+        {
+            throw new NotImplementedException();
+            //return BitList.BitWiseOperator(value, MoveBits);
+        }
+#endif
+
 
         public static BitList operator ^(BitList Value1, BitList Value2) => Value1 ^ (List<Bit>)Value2;
         public static BitList operator ^(List<Bit> Value1, BitList Value2) => Value2 ^ Value1;

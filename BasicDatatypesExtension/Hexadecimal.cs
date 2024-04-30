@@ -7,37 +7,26 @@ using System.Threading.Tasks;
 
 namespace System
 {
-    public struct HexadecimalChar
+    public partial struct HexadecimalChar
     {
-#if NET6_0_OR_GREATER
         private Bit[] _BitCode = new Bit[4] { 0, 0, 0, 0 };
 
         public HexadecimalChar() { }
-#else
-        private Bit[] _BitCode;
-#endif
         public HexadecimalChar(byte Value) : this(BitList.ToBitList(Value)) { }
 
         public HexadecimalChar(List<Bit> BitCode)
         {
-#if NETFRAMEWORK
-            _BitCode = BitCode.ToArray();
-#endif
             this.BitCode = BitCode;
         }
 
         public override string ToString()
         {
             var n = (byte)BitList.ToNumber(this.BitCode);
-#if NET6_0_OR_GREATER
             return n switch
             {
                 > 10 and <= 15 => ((char)(n + 55)).ToString(),
                 _ => n.ToString(),
             };
-#else
-            return n.ToString();
-#endif
         }
 
 #region Properties
@@ -78,7 +67,6 @@ namespace System
             }
         }
 
-#if NET6_0_OR_GREATER
         public Char AsChar
         {
             get => this.ToString()[0];
@@ -97,7 +85,6 @@ namespace System
                 };
             }
         }
-#endif
 
 #endregion
 
@@ -234,4 +221,10 @@ namespace System
             }
         }
     }*/
+
+
+    public partial struct HexadecimalChar
+    {
+
+    }
 }

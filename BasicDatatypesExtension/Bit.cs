@@ -15,7 +15,7 @@ namespace System
     {
         private readonly bool _Value;
 
-        #region Constructor
+#region Constructor
 
         public Bit(bool value)
         {
@@ -154,7 +154,7 @@ namespace System
         /// <returns></returns>
         public static int operator *(Bit Left, int Right)
         {
-            return Right * (Left._Value ? 1 : 0);
+            return Right * Left;
         }
 
         /// <summary>

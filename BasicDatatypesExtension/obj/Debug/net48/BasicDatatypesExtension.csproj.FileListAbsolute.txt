@@ -7,3 +7,4 @@ C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\Basic
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\bin\Debug\net48\BasicDatatypesExtension.pdb
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net48\BasicDatatypesExtension.dll
 C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net48\BasicDatatypesExtension.pdb
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Debug\net48\BasicDatatypesExtension.sourcelink.json

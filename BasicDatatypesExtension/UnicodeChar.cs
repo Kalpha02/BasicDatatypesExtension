@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-#if NET6_0_OR_GREATER
+#if NET5_0_OR_GREATER
 namespace System
 {
     /// <summary>
@@ -290,7 +290,7 @@ namespace System
             }
             set
             {
-                if (value == null)
+                if (value is null)
                 {
                     return;
                 }
@@ -419,13 +419,13 @@ namespace System
 
         public static UnicodeChar operator <<(UnicodeChar Character, int Value)
         {
-            Character.BitCode = BitList.BitOperator(Character.BitCode, -Value);
+            Character.BitCode = BitList.BitWiseOperator(Character.BitCode, -Value);
             return Character;
         }
 
         public static UnicodeChar operator >>(UnicodeChar Character, int Value)
         {
-            Character.BitCode = BitList.BitOperator(Character.BitCode, Value);
+            Character.BitCode = BitList.BitWiseOperator(Character.BitCode, Value);
             return Character;
         }
 

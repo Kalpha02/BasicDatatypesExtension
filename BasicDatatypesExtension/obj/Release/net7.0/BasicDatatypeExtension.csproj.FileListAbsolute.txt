@@ -1,0 +1,12 @@
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\bin\Release\net7.0\BasicDatatypeExtension.deps.json
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\bin\Release\net7.0\BasicDatatypeExtension.dll
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\bin\Release\net7.0\BasicDatatypeExtension.pdb
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Release\net7.0\BasicDatatypeExtension.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Release\net7.0\BasicDatatypeExtension.AssemblyInfoInputs.cache
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Release\net7.0\BasicDatatypeExtension.AssemblyInfo.cs
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Release\net7.0\BasicDatatypeExtension.csproj.CoreCompileInputs.cache
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Release\net7.0\BasicDatatypeExtension.sourcelink.json
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Release\net7.0\BasicDatatypeExtension.dll
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Release\net7.0\refint\BasicDatatypeExtension.dll
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Release\net7.0\BasicDatatypeExtension.pdb
+C:\Users\Pascal\Documents\Projekte\Visual Studio\Library_Projects\Projects\BasicDatatypesExtension\BasicDatatypesExtension\obj\Release\net7.0\ref\BasicDatatypeExtension.dll
