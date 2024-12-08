@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,6 +31,18 @@ namespace System
         }
 
 #region Properties
+
+        internal Bit this[int index]
+        {
+            get
+            {
+                return _BitCode[index];
+            }
+            set
+            {
+                _BitCode[index] = value;
+            }
+        }
 
         public List<Bit> BitCode
         {

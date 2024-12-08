@@ -23,17 +23,18 @@ namespace System
 
         #region Constructors
 
-        public BitList() { }
-
         public BitList(params Bit[] Value)
         {
             foreach (var Bit in Value)
                 this.Add(Bit);
         }
 
-        public BitList(List<Bit> Bits)
+        public BitList(IEnumerable<Bit> Bits)
         {
-            Bits.ForEach(this.Add);
+            foreach (Bit bit in Bits)
+            {
+                this.Add(bit);
+            }
         }
         #endregion
 
@@ -143,94 +144,63 @@ namespace System
             return this;
         }
 
-        /// <summary>
-        /// Searches for the specified range and returns a zero-based index of the first occurence of the entire <see cref="List{T}"/> of this instance.
-        /// </summary>
-        /// <param name="Range"></param>
-        /// <returns>The zero-based index of the first occurence of <paramref name="Range"/>, if found; otherwise, -1.</returns>
-        public int IndexOf(List<Bit> Range) => this.IndexOf(Range, 0, this.Count);
-        /// <summary>
-        /// Searches for the specified range and returns a zero-based index of the first occurence within the range of elements in the <see cref="List{T}"/>
-        /// that extends from the specified index to the last element of this instance.
-        /// </summary>
-        /// <param name="Range"></param>
-        /// <param name="StartIndex">The zero-based starting index of the search.</param>
-        /// <returns>The zero-based index of the first occurence of <paramref name="Range"/>, if found; otherwise, -1.</returns>
-        public int IndexOf(List<Bit> Range, int StartIndex) => this.IndexOf(Range, StartIndex, this.Count);
-        /// <summary>
-        /// Searches for the specified range and returns a zero-based index of the first occurence within the range of elements in the <see cref="List{T}"/>
-        /// that starts at the specified index of <paramref name="StartIndex"/> and contains the specified number of elements.
-        /// </summary>
-        /// <param name="Range"></param>
-        /// <param name="StartIndex">The zero-based starting index of the search.</param>
-        /// <param name="Count">The number of elements in the section to search.</param>
-        /// <returns>The zero-based index of the first occurence of <paramref name="Range"/>, if found; otherwise, -1.</returns>
-        public int IndexOf(List<Bit> Range, int StartIndex, int Count)
+        /// <inheritdoc cref = "List{T}.IndexOf(T)"/>
+        public int IndexOf(IEnumerable<Bit> item) => this.IndexOf(item, 0, this.Count);
+        /// <inheritdoc cref="List{T}.IndexOf(T, int)"/>
+        public int IndexOf(IEnumerable<Bit> item, int StartIndex) => this.IndexOf(item, StartIndex, this.Count);
+        /// <inheritdoc cref="List{T}.IndexOf(T, int, int)"/>
+        public int IndexOf(IEnumerable<Bit> item, int StartIndex, int Count)
         {
-            ArgumentNullException.ThrowIfNull(Range, nameof(Range));
-            if (Range.Count == 0)
+            if (item is null)
             {
-                throw new ArgumentException("Argument length is 0", nameof(Range));
+                return -1;
             }
-            if (Range.Count > (this.Count - StartIndex))
+            int ItemsCounted = item.Count();
+            if (ItemsCounted == 0)
             {
-                throw new ArgumentException("Argument is longer than the item itself", nameof(Range));
+                return -1;
             }
-            int Counter = Range.Count;
+            if (ItemsCounted > (this.Count - StartIndex))
+            {
+                return -1;
+            }
             for (int j = 0; StartIndex < this.Count; StartIndex++, j++)
             {
-                if (j == Range.Count)
-                    throw new ArgumentOutOfRangeException(nameof(Range));
-                if (this[StartIndex] == Range[j])
+                if (j == ItemsCounted)
+                    throw new ArgumentOutOfRangeException(nameof(item));
+                if (this[StartIndex] == item.ElementAt(j))
                 {
                     Count--;
                     if (Count == 0)
                     {
-                        return StartIndex - Range.Count - 1;
+                        return StartIndex - ItemsCounted - 1;
                     }
                     continue;
                 }
-                Count = Range.Count;
+                Count = ItemsCounted;
             }
             return -1;
         }
 
-        /// <summary>
-        /// Creates a shallow copy of a range of elements in the source <see cref="List{T}"/>.
-        /// </summary>
-        /// <param name="index">The zero-bast List index at which the range starts.</param>
-        /// <returns>A shallow copy of a range of elements in the source </returns>
-        /// <exception cref="Exception"></exception>
-        /// <exception cref="IndexOutOfRangeException"></exception>
+        /// <inheritdoc cref="List{T}.GetRange(int, int)"/>
         public BitList GetRange(int index)
         {
             if (index < 0 || index >= this.Count)
             {
                 if (this.Count == 0)
                 {
-                    throw new Exception("You can't get a range from an empty list");
+                    throw new Exception("You can't get a range from an empty list.");
                 }
                 throw new IndexOutOfRangeException();
             }
-            return new BitList(this.GetRange(index, this.Count - index - 1));
+            return new BitList(base.GetRange(index, this.Count - index - 1));
         }
 
         /// <summary>
-        /// Adds a range to the end of the <see cref="BitList"/>.
+        /// Adds a range to the end of the current instance of this <see cref="BitList"/>.
         /// </summary>
-        /// <param name="Value">The <see cref="List{T}"/> which will be added</param>
-        public void AddRange(List<bool> Value)
-        {
-            foreach (bool b in Value)
-            {
-                this.Add(b);
-            }
-        }
-        /// <summary>
-        /// Adds a range to the end of the <see cref="BitList"/>.
-        /// </summary>
-        /// <param name="Value">The <see cref="bool[]"/> which will be added</param>
-        public void AddRange(bool[] Value)
+        /// <param name="Value">The <see cref="List{T}"/> which will be added.</param>
+        public void AddRange(IEnumerable<bool> Value)
         {
             foreach (bool b in Value)
             {
@@ -238,9 +208,42 @@ namespace System
             }
         }
 
+        /// <summary>
+        /// Adds the 8-bit range of an byte to the end of the current instance if this <see cref="BitList"/>.
+        /// </summary>
+        /// <param name="Value">The byte which will be added.</param>
         public void Add(byte Value)
         {
             this.AddRange(BitList.ToBitList(Value, 8));
+        }
+
+        /// <summary>
+        /// Reads all the bytes of a path and executes the xor on the current instance with the bits in the file.
+        /// </summary>
+        /// <param name="Path">The path of the file from which the bits will be used for execution of xor.</param>
+        /// <returns>The new <see cref="BitList"/> where xor was executed. If the file is too short the file will be added again to its own <see cref="BitList"/>.
+        /// If its too long the <see cref="Bit"/>s will be cut of on the right side.</returns>
+        /// <inheritdoc cref="System.IO.File.ReadAllBytes(string)"/>
+        public BitList xOrWithFile(string Path)
+        {
+            BitList file;
+            try
+            {
+                file = System.IO.File.ReadAllBytes(Path);
+            }
+            catch
+            {
+                throw;
+            }
+            while (file.Count < this.Count)
+            {
+                file.AddRange(file);
+            }
+            if (file.Count > this.Count)
+            {
+                file = new BitList(file.GetRange(0, this.Count));
+            }
+            return this ^ file;
         }
 
         /// <summary>
@@ -268,6 +271,7 @@ namespace System
 
         public string ToString(int PadLeft) => this.ToString().PadLeft(PadLeft, '0');
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             StringBuilder retruningValue = new StringBuilder();
@@ -322,7 +326,7 @@ namespace System
                     StringBuilder sb = new StringBuilder();
                     foreach (var b in ToByteArray())
                     {
-                        sb.Append(b.ToString(Format));
+                        sb.Append(b.ToString("x2"));
                     }
                     return sb.ToString().PadLeft(val, '0');
 
@@ -408,10 +412,10 @@ namespace System
         /// </summary>
         /// <param name="referenceList">The List of <see cref="Bit"/>s which will be adjusted. Instances of <see cref="BitList"/> can also be passed.</param>
         /// <returns></returns>
-        public static BitList ToByteSize(List<Bit> referenceList)
+        public static BitList ToByteSize(IEnumerable<Bit> referenceList)
         {
             var result = new BitList(referenceList);
-            byte mod8 = (byte)(result.Count % 8);
+            byte mod8 = (byte)(8 - (result.Count % 8));
             while (mod8 != 0)
             {
                 result.Insert(0, false);
@@ -420,23 +424,13 @@ namespace System
             return result;
         }
 
-        public static BigInteger ToNumber(List<Bit> BitCode)
+        public static BigInteger ToNumber(IEnumerable<Bit> BitCode)
         {
-            int BitCodeLength = BitCode.Count;
+            int BitCodeLength = BitCode.Count();
             BigInteger Value = 0;
             for (int i = 0; i < BitCodeLength; i++)
             {
-                Value += BitCode[i][BitCodeLength - i - 1];
-            }
-            return Value;
-        }
-
-        public static BigInteger ToNumber(Bit[] BitCode)
-        {
-            BigInteger Value = 0;
-            for (int i = 0; i < BitCode.Length; i++)
-            {
-                Value += BitCode[i][BitCode.Length - i - 1];
+                Value += BitCode.ElementAt(i)[BitCodeLength - i - 1];
             }
             return Value;
         }
@@ -448,22 +442,31 @@ namespace System
         /// <param name="Bitlist"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public static Color ToColor(BitList Bitlist)
+        public static Color ToColor(IEnumerable<Bit> Bitlist)
         {
-            while (Bitlist.Count > 32)
+            int length = Bitlist.Count();
+            if (length > 32)
             {
-                if ((bool)Bitlist.First()) throw new ArgumentOutOfRangeException(nameof(Bitlist), $"List of bits has more bits than the maximum amount of {32}");
-                Bitlist.RemoveAt(0);
+                int bitsToSkip = 0;
+                for (int i = 0; i + 32 < length; i++)
+                {
+                    if ((bool)Bitlist.ElementAt(i)) throw new ArgumentOutOfRangeException(nameof(Bitlist), $"List of bits has more bits than the maximum amount of {32}");
+                    bitsToSkip++;
+                }
+                Bitlist = Bitlist.Skip(bitsToSkip);
+                length -= bitsToSkip;
             }
-            while (Bitlist.Count < 32)
+            if (length < 32)
             {
-                Bitlist.Insert(0, false);
+                int fillcount = 32 - length;
+                Bitlist = Enumerable.Repeat(new Bit(false), fillcount);
+                length += fillcount;
             }
             Debug.WriteLine(Bitlist);
-            return Color.FromArgb((int)BitList.ToNumber(Bitlist.GetRange(0, 8)),
-                                  (int)BitList.ToNumber(Bitlist.GetRange(8, 8)),
-                                  (int)BitList.ToNumber(Bitlist.GetRange(16, 8)),
-                                  (int)BitList.ToNumber(Bitlist.GetRange(24, 8)));
+            return Color.FromArgb((int)BitList.ToNumber(Bitlist.Take(8)),
+                                  (int)BitList.ToNumber(Bitlist.Take(new Range(8, 16))),
+                                  (int)BitList.ToNumber(Bitlist.Take(new Range(16, 24))),
+                                  (int)BitList.ToNumber(Bitlist.Skip(24)));
         }
 
         /// <summary>
@@ -472,16 +475,17 @@ namespace System
         /// </summary>
         /// <param name="bitList"></param>
         /// <returns></returns>
-        public static byte[] ToByteArray(BitList bitList)
+        public static byte[] ToByteArray(IEnumerable<Bit> bitList)
         {
             return BitList.ToByteList(bitList).ToArray();
         }
 
-        public static List<byte> ToByteList(BitList Bits)
+        public static List<byte> ToByteList(IEnumerable<Bit> Bits)
         {
             List<byte> Bytes = new List<byte>();
-            List<Bit> bitList = Bits.ToByteSize();
-            for (int i = 0; i < Bits.Count; i += 8)
+            List<Bit> bitList = BitList.ToByteSize(Bits);
+            int ItemsCounted = Bits.Count();
+            for (int i = 0; i < ItemsCounted; i += 8)
             {
                 Bytes.Add((byte)BitList.ToNumber(bitList.GetRange(i, 8)));
             }
@@ -494,43 +498,67 @@ namespace System
         /// <param name="BitCode"></param>
         /// <param name="Value">How many times the bit should be moved in the right direction</param>
         /// <returns></returns>
-        public static BitList BitWiseOperator(List<Bit> BitCode, BigInteger Value)
+        public static BitList BitWiseOperator(IEnumerable<Bit> BitCode, BigInteger Value)
         {
-            int BitCodeLength = BitCode.Count;
+            int BitCodeLength = BitCode.Count();
+            if (BitCodeLength < 2)
+            {
+                return new BitList(BitCode);
+            }
             int Moves = (int)(((Value % BitCodeLength) + BitCodeLength) % BitCodeLength);
             BitList New_BitCode = new();
-            New_BitCode.AddRange(BitCode.GetRange(BitCodeLength - Moves, Moves));
-            New_BitCode.AddRange(BitCode.GetRange(0, BitCodeLength - Moves));
+            New_BitCode.AddRange(BitCode.Skip(BitCodeLength - Moves));
+            New_BitCode.AddRange(BitCode.Take(new Range (0, BitCodeLength - Moves)));
             return New_BitCode;
         }
 
         private static void ToSameLength(ref BitList Value1, ref List<Bit> Value2)
         {
-            while (Value1.Count < Value2.Count)
+            //Value2.InsertRange(0, Value1);
+            if (Value1.Count < Value2.Count)
             {
-                Value1.Insert(0, false);
+                Debug.WriteLine("schlupp");
+                Value1.InsertRange(0, new Bit[Value2.Count - Value1.Count]);
             }
-            while (Value1.Count > Value2.Count)
+            if (Value1.Count > Value2.Count)
             {
-                Value2.Insert(0, false);
+                Debug.WriteLine("plop");
+                Value1.InsertRange(0, new Bit[Value1.Count - Value2.Count]);
             }
         }
 
-        private static bool GreaterThan(List<Bit> Value1, List<Bit> Value2)
+        private static void ToSameLength(ref BitList Value1, ref IEnumerable<Bit> Value2)
+        {
+            int Val1Length = Value1.Count();
+            int Val2Length = Value2.Count();
+            //Value2.InsertRange(0, Value1);
+            if (Val1Length > Val2Length)
+            {
+                Value2 = Enumerable.Repeat(new Bit(false), Val2Length - Val1Length).Concat(Value2);
+            }
+            if (Val1Length < Val2Length)
+            {
+                Value1.InsertRange(0, new Bit[Val2Length - Val1Length]);
+            }
+        }
+
+        private static bool GreaterThan(IEnumerable<Bit> Value1, IEnumerable<Bit> Value2)
         {
             Value1 = new BitList(Value1).TrimStart();
             Value2 = new BitList(Value2).TrimStart();
-            if (Value1.Count > Value2.Count)
+            int Val1Length = Value1.Count();
+            int Val2Length = Value2.Count();
+            if (Val1Length > Val2Length)
             {
                 return true;
             }
-            if (Value2.Count > Value1.Count)
+            if (Val2Length > Val1Length)
             {
                 return false;
             }
-            for (int i = 0; i < Value2.Count; i++)
+            for (int i = 0; i < Val2Length; i++)
             {
-                if (Value1[i] > Value2[i])
+                if (Value1.ElementAt(i) > Value2.ElementAt(i))
                 {
                     return true;
                 }
@@ -563,12 +591,43 @@ namespace System
 
         #region Implicit Operators
 
+        public static implicit operator BitList(bool Value)
+        {
+            return new BitList(Value);
+        }
+
+        public static implicit operator BitList(bool[] Value)
+        {
+            BitList result = new BitList();
+            result.AddRange(Value);
+            return result;
+        }
+
+        public static implicit operator BitList(List<bool> Value)
+        {
+            BitList result = new BitList();
+            result.AddRange(Value);
+            return result;
+        }
+
+        public static implicit operator BitList(Stack<bool> Value)
+        {
+            BitList result = new BitList();
+            result.AddRange(Value);
+            return result;
+        }
+
+        public static implicit operator BitList(Bit Value)
+        {
+            return new BitList(Value);
+        }
+
         public static implicit operator BitList(Bit[] Value)
         {
             return new BitList(Value);
         }
 
-        public static implicit operator BitList(Bit Value)
+        public static implicit operator BitList(Stack<Bit> Value)
         {
             return new BitList(Value);
         }
@@ -585,26 +644,12 @@ namespace System
             {
                 throw new Exception("Total length need to be bigger than 0");
             }
-            BitList val = Value[0];
-            for (int i = 1; i < Value.Length; i++)
+            BitList val = BitList.Empty;
+            for (int i = 0; i < Value.Length; i++)
             {
                 val.Add(Value[i]);
             }
             return val;
-        }
-
-        public static implicit operator BitList(bool[] Value)
-        {
-            BitList result = new BitList();
-            result.AddRange(Value);
-            return result;
-        }
-
-        public static implicit operator BitList(List<bool> Value)
-        {
-            BitList result = new BitList();
-            result.AddRange(Value);
-            return result;
         }
 
         public static implicit operator BitList(BigInteger Value)
@@ -671,9 +716,9 @@ namespace System
             }
             return Value1;
         }
-        public static BigInteger operator +(BitList Value1, BitList Value2) => Value1 + (List<Bit>)Value2;
-        public static BigInteger operator +(List<Bit> Value1, BitList Value2) => Value2 + Value1;
-        public static BigInteger operator +(BitList Value1, List<Bit> Value2)
+        public static BigInteger operator +(BitList Value1, BitList Value2) => Value1 + (IEnumerable<Bit>)Value2;
+        public static BigInteger operator +(IEnumerable<Bit> Value1, BitList Value2) => Value2 + Value1;
+        public static BigInteger operator +(BitList Value1, IEnumerable<Bit> Value2)
         {
             return BitList.ToNumber(Value1) + BitList.ToNumber(Value2);
         }
@@ -704,23 +749,23 @@ namespace System
             }
             return Value1;
         }
-        public static BigInteger operator -(BitList Value1, List<Bit> Value2) => Value1 - new BitList(Value2);
-        public static BigInteger operator -(List<Bit> Value1, BitList Value2) => new BitList(Value1) - Value2;
+        public static BigInteger operator -(BitList Value1, IEnumerable<Bit> Value2) => Value1 - new BitList(Value2);
+        public static BigInteger operator -(IEnumerable<Bit> Value1, BitList Value2) => new BitList(Value1) - Value2;
         public static BigInteger operator -(BitList Value1, BitList Value2)
         {
             return BitList.ToNumber(Value1) - BitList.ToNumber(Value2);
         }
 
-        public static BigInteger operator *(BitList Value1, BitList Value2) => Value1 * (List<Bit>)Value2;
-        public static BigInteger operator *(List<Bit> Value1, BitList Value2) => Value2 * Value1;
-        public static BigInteger operator *(BitList Value1, List<Bit> Value2)
+        public static BigInteger operator *(BitList Value1, BitList Value2) => Value1 * (IEnumerable<Bit>)Value2;
+        public static BigInteger operator *(IEnumerable<Bit> Value1, BitList Value2) => Value2 * Value1;
+        public static BigInteger operator *(BitList Value1, IEnumerable<Bit> Value2)
         {
             return BitList.ToNumber(Value1) * BitList.ToNumber(Value2);
         }
 
-        public static BigInteger operator /(BitList Value1, BitList Value2) => Value1 / (List<Bit>)Value2;
-        public static BigInteger operator /(List<Bit> Value1, BitList Value2) => Value2 / Value1;
-        public static BigInteger operator /(BitList Value1, List<Bit> Value2)
+        public static BigInteger operator /(BitList Value1, BitList Value2) => Value1 / (IEnumerable<Bit>)Value2;
+        public static BigInteger operator /(IEnumerable<Bit> Value1, BitList Value2) => Value2 / Value1;
+        public static BigInteger operator /(BitList Value1, IEnumerable<Bit> Value2)
         {
             return BitList.ToNumber(Value1) / BitList.ToNumber(Value2);
         }
@@ -758,38 +803,43 @@ namespace System
 #endif
 
 
-        public static BitList operator ^(BitList Value1, BitList Value2) => Value1 ^ (List<Bit>)Value2;
-        public static BitList operator ^(List<Bit> Value1, BitList Value2) => Value2 ^ Value1;
-        public static BitList operator ^(BitList Value1, List<Bit> Value2)
+        public static BitList operator ^(BitList Value1, BitList Value2) => Value1 ^ (IEnumerable<Bit>)Value2;
+        public static BitList operator ^(IEnumerable<Bit> Value1, BitList Value2) => Value2 ^ Value1;
+        public static BitList operator ^(BitList Value1, IEnumerable<Bit> Value2)
         {
             BitList.ToSameLength(ref Value1, ref Value2);
-            for (int i = 0; i < Value1.Count; i++)
+            int ListLength = Value1.Count;
+            for (int i = 0; i < ListLength; i++)
             {
-                Value1[i] ^= Value2[i];
+                //Debug.WriteLine("hi " + i);
+                Value1[i] ^= Value2.ElementAt(i);
+            }
+            Debug.WriteLine("ready");
+            return Value1;
+        }
+
+        public static BitList operator &(BitList Value1, BitList Value2) => Value1 & (IEnumerable<Bit>)Value2;
+        public static BitList operator &(IEnumerable<Bit> Value1, BitList Value2) => Value2 & Value1;
+        public static BitList operator &(BitList Value1, IEnumerable<Bit> Value2)
+        {
+            ToSameLength(ref Value1, ref Value2);
+            int ListLength = Value1.Count;
+            for (int i = 0; i < ListLength; i++)
+            {
+                Value1[i] &= Value2.ElementAt(i);
             }
             return Value1;
         }
 
-        public static BitList operator &(BitList Value1, BitList Value2) => Value1 & (List<Bit>)Value2;
-        public static BitList operator &(List<Bit> Value1, BitList Value2) => Value2 & Value1;
-        public static BitList operator &(BitList Value1, List<Bit> Value2)
+        public static BitList operator |(BitList Value1, BitList Value2) => Value1 | (IEnumerable<Bit>)Value2;
+        public static BitList operator |(IEnumerable<Bit> Value1, BitList Value2) => Value2 | Value1;
+        public static BitList operator |(BitList Value1, IEnumerable<Bit> Value2)
         {
             ToSameLength(ref Value1, ref Value2);
-            for (int i = 0; i < Value1.Count; i++)
+            int ListLength = Value1.Count;
+            for (int i = 0; i < ListLength; i++)
             {
-                Value1[i] &= Value2[i];
-            }
-            return Value1;
-        }
-
-        public static BitList operator |(BitList Value1, BitList Value2) => Value1 | (List<Bit>)Value2;
-        public static BitList operator |(List<Bit> Value1, BitList Value2) => Value2 | Value1;
-        public static BitList operator |(BitList Value1, List<Bit> Value2)
-        {
-            ToSameLength(ref Value1, ref Value2);
-            for (int i = 0; i < Value1.Count; i++)
-            {
-                Value1[i] |= Value2[i];
+                Value1[i] |= Value2.ElementAt(i);
             }
             return Value1;
         }
@@ -814,40 +864,28 @@ namespace System
         }
 
         public static bool operator <(BitList Value1, BitList Value2) => GreaterThan(Value2, Value1);
-        public static bool operator <(List<Bit> Value1, BitList Value2) => GreaterThan(Value2, Value1);
-        public static bool operator <(BitList Value1, List<Bit> Value2) => GreaterThan(Value2, Value1);
-        public static bool operator <(Bit[] Value1, BitList Value2) => GreaterThan(Value2, Value1.ToList());
-        public static bool operator <(BitList Value1, Bit[] Value2) => GreaterThan(Value2.ToList(), Value1);
+        public static bool operator <(IEnumerable<Bit> Value1, BitList Value2) => GreaterThan(Value2, Value1);
+        public static bool operator <(BitList Value1, IEnumerable<Bit> Value2) => GreaterThan(Value2, Value1);
 
         public static bool operator >(BitList Value1, BitList Value2) => GreaterThan(Value1, Value2);
-        public static bool operator >(List<Bit> Value1, BitList Value2) => GreaterThan(Value1, Value2);
-        public static bool operator >(BitList Value1, List<Bit> Value2) => GreaterThan(Value1, Value2);
-        public static bool operator >(Bit[] Value1, BitList Value2) => GreaterThan(Value1.ToList(), Value2);
-        public static bool operator >(BitList Value1, Bit[] Value2) => GreaterThan(Value1, Value2.ToList());
+        public static bool operator >(IEnumerable<Bit> Value1, BitList Value2) => GreaterThan(Value1, Value2);
+        public static bool operator >(BitList Value1, IEnumerable<Bit> Value2) => GreaterThan(Value1, Value2);
 
         public static bool operator <=(BitList Value1, BitList Value2) => !GreaterThan(Value1, Value2);
-        public static bool operator <=(List<Bit> Value1, BitList Value2) => !GreaterThan(Value1, Value2);
-        public static bool operator <=(BitList Value1, List<Bit> Value2) => !GreaterThan(Value1, Value2);
-        public static bool operator <=(Bit[] Value1, BitList Value2) => !GreaterThan(Value1.ToList(), Value2);
-        public static bool operator <=(BitList Value1, Bit[] Value2) => !GreaterThan(Value1, Value2.ToList());
+        public static bool operator <=(IEnumerable<Bit> Value1, BitList Value2) => !GreaterThan(Value1, Value2);
+        public static bool operator <=(BitList Value1, IEnumerable<Bit> Value2) => !GreaterThan(Value1, Value2);
 
         public static bool operator >=(BitList Value1, BitList Value2) => !GreaterThan(Value2, Value1);
-        public static bool operator >=(List<Bit> Value1, BitList Value2) => !GreaterThan(Value2, Value1);
-        public static bool operator >=(BitList Value1, List<Bit> Value2) => !GreaterThan(Value2, Value1);
-        public static bool operator >=(Bit[] Value1, BitList Value2) => !GreaterThan(Value1.ToList(), Value2);
-        public static bool operator >=(BitList Value1, Bit[] Value2) => !GreaterThan(Value1, Value2.ToList());
+        public static bool operator >=(IEnumerable<Bit> Value1, BitList Value2) => !GreaterThan(Value2, Value1);
+        public static bool operator >=(BitList Value1, IEnumerable<Bit> Value2) => !GreaterThan(Value2, Value1);
 
         public static bool operator ==(BitList Value1, BitList Value2) => Value1.Equals(Value2);
-        public static bool operator ==(List<Bit> Value1, BitList Value2) => Value2.Equals(Value1);
-        public static bool operator ==(BitList Value1, List<Bit> Value2) => Value1.Equals(Value2);
-        public static bool operator ==(Bit[] Value1, BitList Value2) => Value2.Equals(Value1);
-        public static bool operator ==(BitList Value1, Bit[] Value2) => Value1.Equals(Value2);
+        public static bool operator ==(IEnumerable<Bit> Value1, BitList Value2) => Value2.Equals(Value1);
+        public static bool operator ==(BitList Value1, IEnumerable<Bit> Value2) => Value1.Equals(Value2);
         
         public static bool operator !=(BitList Value1, BitList Value2) => !Value1.Equals(Value2);
-        public static bool operator !=(List<Bit> Value1, BitList Value2) => !Value2.Equals(Value1);
-        public static bool operator !=(BitList Value1, List<Bit> Value2) => !Value1.Equals(Value2);
-        public static bool operator !=(Bit[] Value1, BitList Value2) => !Value2.Equals(Value1);
-        public static bool operator !=(BitList Value1, Bit[] Value2) => !Value1.Equals(Value2);
+        public static bool operator !=(IEnumerable<Bit> Value1, BitList Value2) => !Value2.Equals(Value1);
+        public static bool operator !=(BitList Value1, IEnumerable<Bit> Value2) => !Value1.Equals(Value2);
 
         #endregion
     }
